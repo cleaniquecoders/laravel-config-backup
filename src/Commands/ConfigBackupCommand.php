@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace CleaniqueCoders\ConfigBackup\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class ConfigBackupCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-config-backup';
 
     public $description = 'My command';
 

@@ -1,17 +1,17 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "cleaniquecoders/laravel-config-backup",
+    "description": "Backup and restore Laravel configuration (.env and database settings) as a portable AES-256 encrypted archive.",
     "keywords": [
-        ":vendor_name",
+        "Cleanique Coders",
         "laravel",
-        ":package_slug"
+        "laravel-config-backup"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/cleaniquecoders/laravel-config-backup",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "Nasrul Hazim Bin Mohamad",
+            "email": "nasrulhazim.m@gmail.com",
             "role": "Developer"
         }
     ],
@@ -35,13 +35,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "CleaniqueCoders\\ConfigBackup\\": "src/",
+            "CleaniqueCoders\\ConfigBackup\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
+            "CleaniqueCoders\\ConfigBackup\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -63,10 +63,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "CleaniqueCoders\\ConfigBackup\\ConfigBackupServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "ConfigBackup": "CleaniqueCoders\\ConfigBackup\\Facades\\ConfigBackup"
             }
         }
     },
