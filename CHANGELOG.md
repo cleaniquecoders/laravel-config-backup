@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-config-backup` will be documented in this file.
 
-## Unreleased
+## 1.0.0 - 2026-06-08
 
 ### Added
 
