@@ -4,7 +4,13 @@
     "keywords": [
         "Cleanique Coders",
         "laravel",
-        "laravel-config-backup"
+        "laravel-config-backup",
+        "backup",
+        "restore",
+        "configuration",
+        "env",
+        "settings",
+        "encryption"
     ],
     "homepage": "https://github.com/cleaniquecoders/laravel-config-backup",
     "license": "MIT",
@@ -16,9 +22,12 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": "^8.3||^8.4",
+        "ext-zip": "*",
         "spatie/laravel-package-tools": "^1.16",
-        "illuminate/contracts": "^11.0||^12.0||^13.0"
+        "illuminate/contracts": "^11.0||^12.0||^13.0",
+        "illuminate/database": "^11.0||^12.0||^13.0",
+        "illuminate/support": "^11.0||^12.0||^13.0"
     },
     "require-dev": {
         "laravel/pint": "^1.14",
@@ -31,7 +40,13 @@
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
-        "spatie/laravel-ray": "^1.35"
+        "spatie/laravel-ray": "^1.35",
+        "livewire/livewire": "^3.0"
+    },
+    "suggest": {
+        "livewire/livewire": "Required for the Config Backup management screen (UI).",
+        "livewire/flux": "Flux UI components used by the optional management screen.",
+        "spatie/laravel-settings": "Register SettingsProperty in the database allowlist to back up DB-stored settings."
     },
     "autoload": {
         "psr-4": {
