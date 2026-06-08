@@ -124,6 +124,29 @@ need to sign in again. Listen for `ConfigRestored` to flush any application-spec
 composer test
 ```
 
+## Local development (Testbench workbench)
+
+The package ships a [Testbench](https://packages.tools/testbench) workbench — a real Laravel
+app with the package installed — so you can exercise it end-to-end. It seeds an admin user
+and three encrypted `settings` rows registered in the database allowlist.
+
+```bash
+# Build the workbench app (creates the sqlite db, migrates, seeds)
+vendor/bin/testbench workbench:build
+vendor/bin/testbench migrate:fresh --seed --seeder='Workbench\Database\Seeders\DatabaseSeeder'
+
+# Drive the feature from the CLI
+vendor/bin/testbench config-backup:create --sections=env,database --password=secret-pass --notes="manual test"
+vendor/bin/testbench config-backup:restore <uuid> --password=secret-pass --force
+vendor/bin/testbench config-backup:prune --keep=2
+
+# Serve the app (welcome page + management UI at /admin/config-backup)
+composer serve
+```
+
+> The management UI renders with Flux components — install `livewire/flux` in the workbench
+> to view it. The CLI and service work without it.
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

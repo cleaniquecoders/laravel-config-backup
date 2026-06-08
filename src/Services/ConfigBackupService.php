@@ -227,10 +227,17 @@ class ConfigBackupService
 
         $zip->close();
 
-        // 5. Flush framework caches so the restored config takes effect. Hosts
-        //    flush their own caches via the ConfigRestored event.
-        Artisan::call('config:clear');
-        Artisan::call('cache:clear');
+        // 5. Best-effort flush of framework caches so the restored config takes
+        //    effect. The restore is already applied — never fail it because a
+        //    cache store is missing or misconfigured. Hosts flush their own
+        //    caches via the ConfigRestored event.
+        foreach (['config:clear', 'cache:clear'] as $command) {
+            try {
+                Artisan::call($command);
+            } catch (\Throwable) {
+                // Ignored: cache flushing is a convenience, not part of restore.
+            }
+        }
 
         ConfigRestored::dispatch($restored, $databaseSummary, $appKeyChanged, $safety->uuid);
 

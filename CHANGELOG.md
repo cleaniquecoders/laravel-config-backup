@@ -17,3 +17,10 @@ All notable changes to `laravel-config-backup` will be documented in this file.
 - Optional scheduled backups (config-driven) and completion/failure mail notifications.
 - Optional Livewire + Flux management screen.
 - Events: `ConfigBackupCreated`, `ConfigBackupFailed`, `ConfigRestored`.
+- Testbench workbench (seeded app + demo allowlist) for end-to-end testing, plus
+  artisan command feature tests.
+
+### Changed
+
+- Restore now flushes framework caches (`config:clear`, `cache:clear`) on a best-effort
+  basis — a missing/misconfigured cache store can no longer abort an already-applied restore.

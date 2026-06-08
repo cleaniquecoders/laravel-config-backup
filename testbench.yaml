@@ -1,0 +1,30 @@
+providers:
+  - Workbench\App\Providers\WorkbenchServiceProvider
+
+migrations:
+  - workbench/database/migrations
+
+seeders:
+  - Workbench\Database\Seeders\DatabaseSeeder
+
+workbench:
+  start: '/'
+  install: true
+  discovers:
+    web: true
+    api: false
+    commands: true
+    views: true
+  build:
+    - create-sqlite-db
+    - 'migrate:fresh --seed'
+  assets: []
+  sync: []
+
+env:
+  - APP_NAME="Config Backup Workbench"
+  - APP_KEY="base64:0JfkI/t0I1d6L+eLPztz8J98LFCv4XREVfOd+xJdhFk="
+  - DB_CONNECTION=sqlite
+  - MAIL_MAILER=log
+  - CONFIG_BACKUP_DISK=local
+  - CONFIG_BACKUP_RETENTION=5
