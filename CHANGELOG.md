@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-config-backup` will be documented in this file.
 
-## Unreleased
+## 1.1.0 - 2026-06-09
 
 ### Added
 
@@ -36,6 +36,13 @@ All notable changes to `laravel-config-backup` will be documented in this file.
 
 - Cross-`APP_KEY` re-encryption portability, authorization gate (allow/deny/guest),
   wrong-password restore rejection, and the new `list` / `--dry-run` commands.
+
+### Documentation
+
+- Slimmed the README to a minimalist overview with a dashboard screenshot, and added a
+  full `docs/` reference (getting started, usage, configuration, and guides).
+- Workbench now ships a browsable Livewire + Flux UI: `livewire/flux` dev dependency, a
+  no-auth layout, and a Tailwind v4 + Flux CSS build (`npm run build:css`).
 
 ## v1.0.0 - 2026-06-08
 
