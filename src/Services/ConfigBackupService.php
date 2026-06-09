@@ -12,8 +12,10 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -37,6 +39,31 @@ class ConfigBackupService
     public function directory(): string
     {
         return trim((string) config('config-backup.directory', 'config-backups'), '/');
+    }
+
+    /**
+     * The authorization gate ability for backup/restore actions, or null when
+     * the gate is disabled (rely on route middleware instead).
+     */
+    public function gate(): ?string
+    {
+        $gate = config('config-backup.gate');
+
+        return $gate === null || $gate === '' ? null : (string) $gate;
+    }
+
+    /**
+     * Whether the current context passes the configured authorization gate.
+     *
+     * Returns true when no gate is configured. Used by the UI/route boundary —
+     * CLI commands run by a server operator deliberately bypass this. This is
+     * the single source of truth for authorization across the package.
+     */
+    public function authorizes(): bool
+    {
+        $gate = $this->gate();
+
+        return $gate === null || Gate::allows($gate);
     }
 
     /**
@@ -407,6 +434,11 @@ class ConfigBackupService
 
         Config::set('app.key', $appKey);
         app()->instance('encrypter', new Encrypter($key, $cipher));
+
+        // Encrypted Eloquent casts resolve the encrypter via Crypt::getFacadeRoot(),
+        // which caches its instance. Clear it so subsequent DB re-encryption picks
+        // up the RESTORED key from the container instead of the stale one.
+        Crypt::clearResolvedInstance('encrypter');
     }
 
     /**

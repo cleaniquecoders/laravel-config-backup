@@ -6,8 +6,8 @@
             <flux:subheading>Encrypted, portable backups of your .env and database-stored settings.</flux:subheading>
         </div>
         <div class="flex gap-2">
-            <flux:button icon="upload" variant="ghost" wire:click="openUploadRestore">Restore from file</flux:button>
-            <flux:button icon="shield-plus" variant="primary" wire:click="openCreateModal">Create backup</flux:button>
+            <flux:button icon="arrow-up-tray" variant="ghost" wire:click="openUploadRestore">Restore from file</flux:button>
+            <flux:button icon="shield-check" variant="primary" wire:click="openCreateModal">Create backup</flux:button>
         </div>
     </div>
 

@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $meta
  * @property int|null $created_by
  * @property Carbon|null $completed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class ConfigBackup extends Model
 {

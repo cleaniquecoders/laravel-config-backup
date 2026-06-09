@@ -8,9 +8,13 @@ use Workbench\App\Models\User;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
-    public function boot(): void
+    public function register(): void
     {
-        // Point the package at the workbench app's models.
+        // Override package config in register() — NOT boot() — so it is in place
+        // before the package loads routes/web.php during its boot phase. (Every
+        // provider register()s before any provider boot()s.) Otherwise the UI
+        // route registers with the default `auth` + `can:` gate middleware, and
+        // an unauthenticated workbench request 500s on the missing `login` route.
         config([
             'config-backup.user_model' => User::class,
 

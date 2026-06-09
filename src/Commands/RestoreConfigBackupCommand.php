@@ -15,6 +15,7 @@ class RestoreConfigBackupCommand extends Command
         {--file= : Absolute path to an external backup archive (instead of a stored UUID).}
         {--password= : Encryption password.}
         {--sections= : Comma-separated sections to restore (env,database). Defaults to all available.}
+        {--dry-run : Show what would change without applying anything.}
         {--force : Skip the confirmation prompt.}';
 
     protected $description = 'Restore application configuration from an encrypted backup (takes a safety snapshot first).';
@@ -55,6 +56,13 @@ class RestoreConfigBackupCommand extends Command
             $this->warn('This restore changes APP_KEY — you may be signed out and other servers may diverge.');
         }
 
+        if ($this->option('dry-run')) {
+            $this->showEnvDiff($preview['env_diff']);
+            $this->comment('Dry run — nothing was applied.');
+
+            return self::SUCCESS;
+        }
+
         if (! $this->option('force') && ! $this->confirm('Restore now? A pre-restore safety backup will be created first.', true)) {
             $this->comment('Aborted.');
 
@@ -76,6 +84,24 @@ class RestoreConfigBackupCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  array{added: array<int, string>, changed: array<int, string>, removed: array<int, string>}  $diff
+     */
+    private function showEnvDiff(array $diff): void
+    {
+        if ($diff['added'] === [] && $diff['changed'] === [] && $diff['removed'] === []) {
+            $this->line('  .env: no key changes.');
+
+            return;
+        }
+
+        foreach (['added' => 'info', 'changed' => 'comment', 'removed' => 'error'] as $type => $style) {
+            if ($diff[$type] !== []) {
+                $this->{$style}(sprintf('  .env %s: %s', $type, implode(', ', $diff[$type])));
+            }
+        }
     }
 
     private function resolveSourcePath(): string

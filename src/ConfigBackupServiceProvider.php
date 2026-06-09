@@ -3,6 +3,7 @@
 namespace CleaniqueCoders\ConfigBackup;
 
 use CleaniqueCoders\ConfigBackup\Commands\CreateConfigBackupCommand;
+use CleaniqueCoders\ConfigBackup\Commands\ListConfigBackupCommand;
 use CleaniqueCoders\ConfigBackup\Commands\PruneConfigBackupCommand;
 use CleaniqueCoders\ConfigBackup\Commands\RestoreConfigBackupCommand;
 use CleaniqueCoders\ConfigBackup\Events\ConfigBackupCreated;
@@ -33,6 +34,7 @@ class ConfigBackupServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 CreateConfigBackupCommand::class,
                 RestoreConfigBackupCommand::class,
+                ListConfigBackupCommand::class,
                 PruneConfigBackupCommand::class,
             ]);
     }

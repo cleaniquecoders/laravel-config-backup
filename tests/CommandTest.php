@@ -36,8 +36,27 @@ it('creates a backup via the artisan command', function () {
         ->and(ConfigBackup::first()->notes)->toBe('cli test');
 });
 
-it('fails the create command without a password', function () {
+it('prompts for the password securely when none is supplied', function () {
     $this->artisan('config-backup:create', ['--sections' => 'env'])
+        ->expectsQuestion('Encryption password', 'prompted-pass-123')
+        ->expectsQuestion('Confirm encryption password', 'prompted-pass-123')
+        ->assertExitCode(0);
+
+    expect(ConfigBackup::count())->toBe(1);
+});
+
+it('fails when the prompted passwords do not match', function () {
+    $this->artisan('config-backup:create', ['--sections' => 'env'])
+        ->expectsQuestion('Encryption password', 'one-pass-123')
+        ->expectsQuestion('Confirm encryption password', 'different-pass')
+        ->assertExitCode(1);
+
+    expect(ConfigBackup::count())->toBe(0);
+});
+
+it('fails the create command when no password is entered', function () {
+    $this->artisan('config-backup:create', ['--sections' => 'env'])
+        ->expectsQuestion('Encryption password', '')
         ->assertExitCode(1);
 
     expect(ConfigBackup::count())->toBe(0);
@@ -57,6 +76,37 @@ it('restores a backup via the artisan command', function () {
     ])->assertExitCode(0);
 
     expect(file_get_contents(base_path('.env')))->toContain('FOO=bar');
+});
+
+it('reports an empty list when there are no backups', function () {
+    $this->artisan('config-backup:list')
+        ->expectsOutputToContain('No config backups found.')
+        ->assertExitCode(0);
+});
+
+it('lists stored backups via the artisan command', function () {
+    app(ConfigBackupService::class)->create(['env'], 'secret-pass-123', 'cli note');
+
+    $this->artisan('config-backup:list')
+        ->expectsOutputToContain('cli note')
+        ->assertExitCode(0);
+});
+
+it('previews a restore with --dry-run without applying it', function () {
+    $backup = app(ConfigBackupService::class)->create(['env'], 'secret-pass-123');
+
+    file_put_contents(base_path('.env'), "FOO=changed\n");
+
+    $this->artisan('config-backup:restore', [
+        'uuid' => $backup->uuid,
+        '--password' => 'secret-pass-123',
+        '--sections' => 'env',
+        '--dry-run' => true,
+    ])->assertExitCode(0);
+
+    // Nothing applied: .env untouched and no safety snapshot created.
+    expect(file_get_contents(base_path('.env')))->toBe("FOO=changed\n")
+        ->and(ConfigBackup::count())->toBe(1);
 });
 
 it('prunes backups beyond retention via the artisan command', function () {

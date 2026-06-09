@@ -7,7 +7,6 @@ use CleaniqueCoders\ConfigBackup\Events\ConfigBackupFailed;
 use CleaniqueCoders\ConfigBackup\Models\ConfigBackup as ConfigBackupModel;
 use CleaniqueCoders\ConfigBackup\Services\ConfigBackupService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -225,10 +224,6 @@ class ConfigBackup extends Component
 
     private function authorizeAccess(): void
     {
-        $gate = config('config-backup.gate');
-
-        if ($gate && ! Gate::allows($gate)) {
-            abort(403);
-        }
+        abort_unless(app(ConfigBackupService::class)->authorizes(), 403);
     }
 }

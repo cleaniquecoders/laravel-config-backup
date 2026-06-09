@@ -2,6 +2,41 @@
 
 All notable changes to `laravel-config-backup` will be documented in this file.
 
+## Unreleased
+
+### Added
+
+- `config-backup:list` Artisan command — list stored backups (UUID, sections, size, status,
+  created, notes) with a `--limit` option.
+- `config-backup:restore --dry-run` — preview the section list and `.env` key diff without
+  applying anything or creating a safety snapshot.
+- Authorization gate is now enforced at the route boundary via `can:{gate}` middleware
+  (in addition to the existing Livewire check), and centralised in
+  `ConfigBackupService::authorizes()`.
+
+### Changed
+
+- `config-backup:create` now prompts for the encryption password securely (hidden input
+  with confirmation) when `--password` is omitted, instead of requiring it on the command
+  line where it leaks into shell history and the process list. `--password` and the
+  scheduled `config-backup.schedule.password` still work for unattended runs.
+
+### Fixed
+
+- **Management UI 500:** the Livewire view referenced non-existent Flux/Heroicon names
+  (`upload`, `shield-plus`), which threw `Flux component [icon.upload] does not exist` and
+  crashed the screen. Replaced with valid Heroicons (`arrow-up-tray`, `shield-check`).
+- **Cross-`APP_KEY` portability:** clear the cached `Crypt` encrypter when the restored
+  `.env` changes `APP_KEY`, so DB settings are re-encrypted with the **restored** key. The
+  encrypted Eloquent cast resolves via `Crypt::getFacadeRoot()`, which previously held a
+  stale encrypter after the pre-restore safety snapshot warmed it — silently re-encrypting
+  with the old key.
+
+### Tests
+
+- Cross-`APP_KEY` re-encryption portability, authorization gate (allow/deny/guest),
+  wrong-password restore rejection, and the new `list` / `--dry-run` commands.
+
 ## v1.0.0 - 2026-06-08
 
 First stable release of **laravel-config-backup** — portable, AES-256 password-encrypted backup & restore of Laravel application configuration (the `.env` file and allowlisted database-stored settings).

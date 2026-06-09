@@ -1,0 +1,12 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build:css": "tailwindcss -i workbench/resources/css/app.css -o workbench/public/css/app.css --minify",
+        "watch:css": "tailwindcss -i workbench/resources/css/app.css -o workbench/public/css/app.css --watch"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.0",
+        "tailwindcss": "^4.0"
+    }
+}

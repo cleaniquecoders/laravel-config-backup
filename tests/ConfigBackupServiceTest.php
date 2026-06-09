@@ -3,6 +3,9 @@
 use CleaniqueCoders\ConfigBackup\Models\ConfigBackup;
 use CleaniqueCoders\ConfigBackup\Services\ConfigBackupService;
 use CleaniqueCoders\ConfigBackup\Tests\Support\Setting;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Encryption\Encrypter;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -29,6 +32,20 @@ afterEach(function () {
 function service(): ConfigBackupService
 {
     return app(ConfigBackupService::class);
+}
+
+/**
+ * Swap the application's active APP_KEY + encrypter to simulate a destination
+ * server with a different key (cross-server portability).
+ */
+function useKey(string $base64Key): void
+{
+    config()->set('app.key', 'base64:'.$base64Key);
+    app()->instance('encrypter', new Encrypter(
+        base64_decode($base64Key),
+        config('app.cipher', 'AES-256-CBC'),
+    ));
+    Crypt::clearResolvedInstance('encrypter');
 }
 
 it('creates an encrypted backup and persists a row', function () {
@@ -109,6 +126,48 @@ it('enforces retention by pruning old backups', function () {
     }
 
     expect(ConfigBackup::count())->toBe(2);
+});
+
+it('re-encrypts the database payload under a different destination APP_KEY', function () {
+    config()->set('config-backup.database', [
+        'settings' => ['model' => Setting::class, 'match' => ['group', 'name']],
+    ]);
+
+    // Server A: encrypt a secret under key A and back up the database section.
+    // The archive stores the payload DECRYPTED.
+    $keyA = base64_encode(random_bytes(32));
+    useKey($keyA);
+    Setting::create(['group' => 'app', 'name' => 'secret', 'payload' => 'Portable']);
+
+    $backup = service()->create(['database'], 'secret-pass-123');
+
+    // Server B: a DIFFERENT key, and a fresh destination (the row does not exist
+    // here yet). Import must re-encrypt the payload with key B.
+    $keyB = base64_encode(random_bytes(32));
+    useKey($keyB);
+    Setting::query()->delete();
+
+    $path = Storage::disk('local')->path($backup->path);
+    service()->restore($path, 'secret-pass-123', ['database']);
+
+    // Readable under the destination key B...
+    expect(Setting::where('name', 'secret')->first()->payload)->toBe('Portable');
+
+    // ...but NOT under the origin key A — proving it was re-encrypted on import,
+    // not carried across as origin-key ciphertext.
+    useKey($keyA);
+    expect(fn () => Setting::where('name', 'secret')->first()->payload)
+        ->toThrow(DecryptException::class);
+});
+
+it('rejects a restore with the wrong password', function () {
+    file_put_contents(base_path('.env'), 'APP_KEY=base64:'.base64_encode(random_bytes(32))."\nFOO=bar\n");
+
+    $backup = service()->create(['env'], 'secret-pass-123');
+    $path = Storage::disk('local')->path($backup->path);
+
+    expect(fn () => service()->restore($path, 'wrong-password', ['env']))
+        ->toThrow(RuntimeException::class);
 });
 
 it('takes a safety snapshot before restoring', function () {

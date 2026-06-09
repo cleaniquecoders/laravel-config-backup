@@ -30,9 +30,11 @@
         "illuminate/support": "^11.0||^12.0||^13.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.14",
-        "nunomaduro/collision": "^8.8",
         "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.14",
+        "livewire/flux": "^2.14",
+        "livewire/livewire": "^3.0",
+        "nunomaduro/collision": "^8.8",
         "orchestra/testbench": "^11.0.0||^10.0.0||^9.0.0",
         "pestphp/pest": "^4.0",
         "pestphp/pest-plugin-arch": "^4.0",
@@ -40,8 +42,7 @@
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
-        "spatie/laravel-ray": "^1.35",
-        "livewire/livewire": "^3.0"
+        "spatie/laravel-ray": "^1.35"
     },
     "suggest": {
         "livewire/livewire": "Required for the Config Backup management screen (UI).",
