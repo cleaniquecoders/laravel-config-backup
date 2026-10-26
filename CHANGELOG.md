@@ -2,6 +2,19 @@
 
 All notable changes to `laravel-config-backup` will be documented in this file.
 
+## v1.1.1 - 2026-10-26
+
+### Fixed
+
+- **Restore from a non-local disk:** restoring a stored backup (Livewire screen and
+  `config-backup:restore {uuid}`) read the archive through `Storage::disk()->path()`, which
+  has no real file behind it on S3 and other remote disks, so `ZipArchive` failed to open it.
+  The archive is now streamed into a temporary local file via the new
+  `ConfigBackupService::withLocalCopy()` helper, which always deletes the copy afterwards.
+  Uploaded archives and `--file` restores are unchanged.
+
+**Full Changelog**: https://github.com/cleaniquecoders/laravel-config-backup/compare/v1.1.0...v1.1.1
+
 ## v1.1.0 - 2026-06-09
 
 ### Added
