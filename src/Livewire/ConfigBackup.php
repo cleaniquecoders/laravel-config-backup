@@ -149,8 +149,9 @@ class ConfigBackup extends Component
         ]);
 
         try {
-            $path = $this->resolveSourcePath();
-            $this->preview = app(ConfigBackupService::class)->preview($path, $this->restorePassword);
+            $this->preview = $this->withSourcePath(
+                fn (string $path) => app(ConfigBackupService::class)->preview($path, $this->restorePassword),
+            );
             $this->restoreSections = $this->preview['available_sections'] ?? [];
         } catch (\Throwable $e) {
             $this->preview = null;
@@ -172,13 +173,12 @@ class ConfigBackup extends Component
         ]);
 
         try {
-            $path = $this->resolveSourcePath();
-            $result = app(ConfigBackupService::class)->restore(
+            $result = $this->withSourcePath(fn (string $path) => app(ConfigBackupService::class)->restore(
                 $path,
                 $this->restorePassword,
                 $this->restoreSections,
                 auth()->id(),
-            );
+            ));
 
             $message = 'Config restored ('.implode(', ', $result['restored']).'). A pre-restore safety backup was created.';
             if ($result['app_key_changed']) {
@@ -211,15 +211,23 @@ class ConfigBackup extends Component
         ])->layout(config('config-backup.route.layout', 'components.layouts.app'));
     }
 
-    private function resolveSourcePath(): string
+    /**
+     * Run $callback with a local path to the archive being restored.
+     *
+     * @template TReturn
+     *
+     * @param  callable(string): TReturn  $callback
+     * @return TReturn
+     */
+    private function withSourcePath(callable $callback): mixed
     {
         if ($this->restoreSource === 'upload') {
-            return $this->uploadFile->getRealPath();
+            return $callback($this->uploadFile->getRealPath());
         }
 
         $backup = ConfigBackupModel::where('uuid', $this->restoreUuid)->firstOrFail();
 
-        return Storage::disk($backup->disk)->path($backup->path);
+        return app(ConfigBackupService::class)->withLocalCopy($backup, $callback);
     }
 
     private function authorizeAccess(): void

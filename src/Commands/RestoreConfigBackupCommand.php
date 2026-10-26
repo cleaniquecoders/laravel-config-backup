@@ -6,7 +6,6 @@ use CleaniqueCoders\ConfigBackup\Events\ConfigBackupFailed;
 use CleaniqueCoders\ConfigBackup\Models\ConfigBackup;
 use CleaniqueCoders\ConfigBackup\Services\ConfigBackupService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 
 class RestoreConfigBackupCommand extends Command
 {
@@ -31,13 +30,19 @@ class RestoreConfigBackupCommand extends Command
         }
 
         try {
-            $path = $this->resolveSourcePath();
+            return $this->withSourcePath(
+                $service,
+                fn (string $path): int => $this->restoreFrom($service, $path, $password),
+            );
         } catch (\Throwable $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
+    }
 
+    private function restoreFrom(ConfigBackupService $service, string $path, string $password): int
+    {
         try {
             $preview = $service->preview($path, $password);
         } catch (\Throwable $e) {
@@ -104,10 +109,15 @@ class RestoreConfigBackupCommand extends Command
         }
     }
 
-    private function resolveSourcePath(): string
+    /**
+     * Run $callback with a local path to the archive being restored.
+     *
+     * @param  callable(string): int  $callback
+     */
+    private function withSourcePath(ConfigBackupService $service, callable $callback): int
     {
         if ($file = $this->option('file')) {
-            return (string) $file;
+            return $callback((string) $file);
         }
 
         $uuid = $this->argument('uuid');
@@ -117,6 +127,6 @@ class RestoreConfigBackupCommand extends Command
 
         $backup = ConfigBackup::where('uuid', $uuid)->firstOrFail();
 
-        return Storage::disk($backup->disk)->path($backup->path);
+        return $service->withLocalCopy($backup, $callback);
     }
 }

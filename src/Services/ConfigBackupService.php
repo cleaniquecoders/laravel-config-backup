@@ -390,6 +390,39 @@ class ConfigBackupService
             });
     }
 
+    /**
+     * Run $callback with a local filesystem path to a stored backup archive.
+     *
+     * ZipArchive needs a real file, which a remote disk (S3 etc.) cannot give
+     * via path(), so the archive is streamed into a temp file that is always
+     * deleted afterwards.
+     *
+     * @template TReturn
+     *
+     * @param  callable(string): TReturn  $callback
+     * @return TReturn
+     */
+    public function withLocalCopy(ConfigBackup $backup, callable $callback): mixed
+    {
+        $stream = Storage::disk($backup->disk)->readStream($backup->path);
+        if (! is_resource($stream)) {
+            throw new RuntimeException('Backup file not found on disk.');
+        }
+
+        $tmpZip = (string) tempnam(sys_get_temp_dir(), 'cfgrst_');
+
+        try {
+            $out = fopen($tmpZip, 'wb');
+            stream_copy_to_stream($stream, $out);
+            fclose($out);
+
+            return $callback($tmpZip);
+        } finally {
+            fclose($stream);
+            File::delete($tmpZip);
+        }
+    }
+
     private function openArchive(string $absZipPath, string $password): ZipArchive
     {
         $zip = new ZipArchive;
